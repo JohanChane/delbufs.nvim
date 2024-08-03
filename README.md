@@ -11,7 +11,7 @@
       --'JohanChane/delbufs.nvim',               -- OR
       config = function()
         require('delbufs').setup {             -- See detail. `config.lua`
-          --disable_default_keymaps = false,
+          --disable_default_keymaps = false,     -- See `init.lua`
         }
       end
     },

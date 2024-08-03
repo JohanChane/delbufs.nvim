@@ -44,6 +44,7 @@ local lazyloaded_modules = {
   del_other_bufs = { 'delbufs.delbufs', 'del_other_bufs' },
   del_hidden_bufs = { 'delbufs.delbufs', 'del_hidden_bufs' },
   del_unused_bufs = { 'delbufs.delbufs', 'del_unused_bufs' },
+  confirm_delbufs = { 'delbufs.delbufs', 'confirm_delbufs' },
 }
 
 for k, v in pairs(lazyloaded_modules) do
