@@ -10,8 +10,9 @@
       dir = '~/.config/nvim/lua/delbufs.nvim', -- Your clone path of `delbufs.nvim`.
       --'JohanChane/delbufs.nvim',               -- OR
       config = function()
-        require('delbufs').setup {             -- See detail. `config.lua`
-          --disable_default_keymaps = false,     -- See `init.lua`
+        require('delbufs').setup {             -- See detail. `config.lua`, `init.lua`.
+          --disable_default_keymaps = false,
+          --disable_default_commands = false
         }
       end
     },

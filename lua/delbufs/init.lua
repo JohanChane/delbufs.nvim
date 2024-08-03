@@ -28,6 +28,34 @@ local function config_delbufs(opts)
       delbufs.confirm_delbufs()
     end, { noremap = true, desc = 'Confirm delbufs' })
   end
+
+  if not opts.disable_default_commands then
+    vim.api.nvim_create_user_command('Delbufs', function(cmd)
+      if cmd.args == '' then
+        delbufs.confirm_delbufs()
+      elseif cmd.args == 'all' then
+        local del_bufs = delbufs.del_all_bufs()
+        vim.api.nvim_echo({ { string.format('Deleted all buffers (%s)', #del_bufs) } }, false, {})
+      elseif cmd.args == 'others' then
+        local del_bufs = delbufs.del_other_bufs()
+        vim.api.nvim_echo({ { string.format('Deleted other buffers (%s)', #del_bufs) } }, false, {})
+      elseif cmd.args == 'hidden' then
+        local del_bufs = delbufs.del_hidden_bufs()
+        vim.api.nvim_echo({ { string.format('Deleted hidden buffers (%s)', #del_bufs) } }, false, {})
+      elseif cmd.args == 'unused' then
+        local del_bufs = delbufs.del_unused_bufs()
+        vim.api.nvim_echo({ { string.format('Deleted unused buffers (%s)', #del_bufs) } }, false, {})
+      else
+        vim.api.nvim_echo({ { 'Invalid argument for Delbufs command' } }, false, {})
+      end
+    end, {
+      nargs = '?',
+      complete = function()
+        return { 'all', 'others', 'hidden', 'unused' }
+      end,
+      desc = 'Delete buffers'
+    })
+  end
 end
 
 function M.setup(opts)
