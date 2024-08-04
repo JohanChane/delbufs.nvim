@@ -17,21 +17,19 @@ local function get_incl_buf_list()
   return incl_buf_list
 end
 
-local function del_all_bufs()
-  local del_bufs = {}
-  for _, bufnr in ipairs(get_incl_buf_list()) do
-    vim.api.nvim_buf_delete(bufnr, {})
-    table.insert(del_bufs, bufnr)
-  end
+local function del_buf(bufnr, opts)
+  opts = opts or {}
+  local status, _ = pcall(function()
+    vim.api.nvim_buf_delete(bufnr, opts)
+  end)
 
-  return del_bufs
+  return status
 end
 
-local function del_other_bufs()
+local function del_all_bufs(opts)
   local del_bufs = {}
   for _, bufnr in ipairs(get_incl_buf_list()) do
-    if bufnr ~= vim.api.nvim_get_current_buf() then
-      vim.api.nvim_buf_delete(bufnr, {})
+    if del_buf(bufnr, opts) then
       table.insert(del_bufs, bufnr)
     end
   end
@@ -39,7 +37,20 @@ local function del_other_bufs()
   return del_bufs
 end
 
-local function del_hidden_bufs()
+local function del_other_bufs(opts)
+  local del_bufs = {}
+  for _, bufnr in ipairs(get_incl_buf_list()) do
+    if bufnr ~= vim.api.nvim_get_current_buf() then
+      if del_buf(bufnr, opts) then
+        table.insert(del_bufs, bufnr)
+      end
+    end
+  end
+
+  return del_bufs
+end
+
+local function del_hidden_bufs(opts)
   local non_hidden_buffer_set = {}
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local bufnr = vim.api.nvim_win_get_buf(win)
@@ -49,8 +60,9 @@ local function del_hidden_bufs()
   local del_bufs = {}
   for _, bufnr in ipairs(get_incl_buf_list()) do
     if not non_hidden_buffer_set[bufnr] then
-      vim.api.nvim_buf_delete(bufnr, {})
-      table.insert(del_bufs, bufnr)
+      if del_buf(bufnr, opts) then
+        table.insert(del_bufs, bufnr)
+      end
     end
   end
 
@@ -85,13 +97,14 @@ local function is_presist_buf(bufnr)
   return vim.fn.getbufvar(bufnr, 'delbufs_bufpersist') == 1
 end
 
-local function del_unused_bufs()
+local function del_unused_bufs(opts)
   local del_bufs = {}
   local curbufnr = vim.api.nvim_get_current_buf()
   for _, bufnr in ipairs(get_incl_buf_list()) do
     if bufnr ~= curbufnr and not is_presist_buf(bufnr) then
-      vim.api.nvim_buf_delete(bufnr, {})
-      table.insert(del_bufs, bufnr)
+      if del_buf(bufnr, opts) then
+        table.insert(del_bufs, bufnr)
+      end
     end
   end
 
@@ -99,18 +112,18 @@ local function del_unused_bufs()
 end
 
 -- ## confirm menu
-local function confirm_delbufs()
+local function confirm_delbufs(opts)
   local choice = vim.fn.confirm('Delete buffers:', '&Unused\n&Hidden\n&Others\n&All', 0)
   local choice_options = { 'unused', 'hidden', 'others', 'all' }
   local del_bufs
   if choice == 1 then
-    del_bufs = del_unused_bufs()
+    del_bufs = del_unused_bufs(opts)
   elseif choice == 2 then
-    del_bufs = del_hidden_bufs()
+    del_bufs = del_hidden_bufs(opts)
   elseif choice == 3 then
-    del_bufs = del_other_bufs()
+    del_bufs = del_other_bufs(opts)
   elseif choice == 4 then
-    del_bufs = del_all_bufs()
+    del_bufs = del_all_bufs(opts)
   end
 
   if del_bufs then
